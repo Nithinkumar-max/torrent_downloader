@@ -16,7 +16,7 @@ A self-hosted web torrent downloader built on **FastAPI + libtorrent** with a cl
 pip install -r requirements.txt
 python -m uvicorn app:app --port 8000
 ```
-Open http://127.0.0.1:8000   
+Open http://127.0.0.1:8000
 
 or visit  : https://bolttorrent.vercel.app/
 
@@ -58,3 +58,39 @@ Requires **Python 3.10+** (libtorrent 2.1 has wheels for Windows/macOS/Linux).
 ├── vercel.json       # Vercel frontend rewrites (optional)
 └── downloads/        # completed downloads (gitignored)
 ```
+
+## Free 24/7 VPS setup (Oracle Cloud Always Free)
+
+## Free 24/7 VPS setup (Oracle Cloud Always Free)
+
+Oracle Cloud offers a genuine, free-forever VPS for this backend.
+
+### 1. Create your free instance
+1. Sign up at [cloud.oracle.com](https://cloud.oracle.com) (requires a credit card for identity verification only — no charge if you stay in Always Free shapes)
+2. Go to **Compute → Instances → Create Instance**
+3. Shape: **VM.Standard.A1.Flex** (free ARM, up to 4 OCPU / 24 GB RAM) if available, else **VM.Standard.E2.1.Micro** (AMD, 1 GB)
+4. Image: **Canonical Ubuntu 22.04** or **24.04**
+5. In **Networking → VCN → Security List**, add an Ingress Rule for:
+   - TCP port `8000` (web UI)
+   - TCP+UDP port `6881` (BitTorrent)
+
+### 2. Deploy in one command
+SSH into your instance, then:
+```bash
+git clone https://github.com/Nithinkumar-max/torrent_downloader.git
+cd torrent_downloader
+chmod +x deploy.sh
+./deploy.sh
+```
+Installs Docker, opens firewall ports, builds, and starts the backend. Your public IP appears at the end.
+
+### 3. Connect the Vercel frontend
+1. Copy the public IP from step 2
+2. Edit `vercel.json` in the repo and replace the placeholder:
+   ```
+   "destination": "http://YOUR-VPS-IP:8000/api/:path*"
+   ```
+3. Commit and push — Vercel auto-deploys
+
+### 4. Use on your phone
+Open `https://bolttorrent.vercel.app` on your phone's browser → tap **⋮ → Install app**. It becomes a home-screen app pointing at the VPS backend. Grab finished files via the per-file download link in the UI.

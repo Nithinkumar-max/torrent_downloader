@@ -1,0 +1,10 @@
+services:
+  torrent:
+    build: .
+    restart: unless-stopped
+    # host network: lets libtorrent bind 6881 directly for incoming peer connections
+    network_mode: host
+    volumes:
+      - ./vol/downloads:/app/downloads      # downloaded files
+      - ./vol/settings.json:/app/settings.json
+      - ./vol/dht.state:/app/dht.state
