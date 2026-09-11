@@ -16,7 +16,9 @@ A self-hosted web torrent downloader built on **FastAPI + libtorrent** with a cl
 pip install -r requirements.txt
 python -m uvicorn app:app --port 8000
 ```
-Open http://127.0.0.1:8000
+Open http://127.0.0.1:8000   
+
+or visit  : https://bolttorrent.vercel.app/
 
 Requires **Python 3.10+** (libtorrent 2.1 has wheels for Windows/macOS/Linux).
 
