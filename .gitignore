@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local state — never commit machine-specific data
+settings.json
+dht.state
+downloads/
+*.part
+
+# Vercel
+.vercel/
+
+# OS
+Thumbs.db
+Desktop.ini

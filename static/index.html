@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="color-scheme" content="dark" />
+<title>BoltTorrent — Your downloads, at full speed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ground:#070B12; --surface:#0D131C; --surface-2:#121A26; --surface-3:#182236;
+    --border:rgba(148,163,184,.10); --border-strong:rgba(148,163,184,.18);
+    --text:#E8EEF7; --muted:#9AA7B8; --faint:#6B7686;
+    --accent:#38BDF8; --accent-strong:#0EA5E9; --on-accent:#04121B;
+    --success:#4ADE80; --danger:#F87171; --warning:#FBBF24;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-7:48px; --sp-8:72px;
+    --r-sm:8px; --r-md:12px; --r-lg:18px;
+    --font-body:'Inter',system-ui,sans-serif;
+    --font-display:'Space Grotesk',system-ui,sans-serif;
+    --ease:cubic-bezier(.32,.72,0,1);
+    --ease-panel:cubic-bezier(.32,.72,0,1);
+    --maxw:1120px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;font-synthesis:none}
+  body{
+    font-family:var(--font-body);font-size:16px;line-height:1.6;color:var(--text);
+    background:radial-gradient(1200px 600px at 78% -10%,rgba(14,165,233,.07),transparent 60%),var(--ground);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(56,189,248,.28)}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+  .mono{font-family:var(--font-display);font-variant-numeric:tabular-nums}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  button{touch-action:manipulation;font-family:var(--font-body)}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border-radius:var(--r-md);border:1px solid transparent;cursor:pointer;
+    font-size:14px;font-weight:600;min-height:40px;padding:9px 18px;white-space:nowrap;
+    transition:background-color var(--ease) 150ms,border-color var(--ease) 150ms,color var(--ease) 150ms,transform .15s var(--ease);
+  }
+  .btn:active{transform:scale(.96)}
+  .btn svg{width:16px;height:16px;flex:none}
+  .btn-filled{background:var(--accent-strong);color:var(--on-accent)}
+  .btn-filled:hover{background:#0C94D3}
+  .btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border)}
+  .btn-ghost:hover{background:var(--surface-3)}
+  .btn-danger{background:transparent;color:var(--danger);border-color:rgba(248,113,113,.25)}
+  .btn-danger:hover{background:rgba(248,113,113,.08)}
+  .btn-block{width:100%}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    display:flex;align-items:center;gap:24px;justify-content:space-between;
+    max-width:var(--maxw);margin:0 auto;padding:14px 24px;
+    background:rgba(7,11,18,.72);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--text)}
+  .brand svg{width:22px;height:22px;color:var(--accent)}
+  .nav{display:flex;align-items:center;gap:26px}
+  .nav a{color:var(--muted);font-size:14px;font-weight:500}
+  .nav a:hover{color:var(--text)}
+
+  /* ---------- sections ---------- */
+  .section{max-width:var(--maxw);margin:0 auto;padding:var(--sp-8) 24px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);
+    font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);
+    padding:5px 12px;border:1px solid rgba(56,189,248,.25);border-radius:999px;background:rgba(56,189,248,.06);
+  }
+  h1,h2,h3{font-family:var(--font-display);text-wrap:balance}
+  h1{font-size:48px;line-height:1.05;letter-spacing:-.02em;font-weight:700}
+  h2{font-size:30px;line-height:1.15;letter-spacing:-.01em}
+  h3{font-size:17px;font-weight:600;line-height:1.3}
+  .lead{color:var(--muted);font-size:17px;max-width:56ch}
+  .muted{color:var(--muted)} .faint{color:var(--faint)}
+  .center{text-align:center}
+
+  /* ---------- hero ---------- */
+  .hero{min-height:calc(100dvh - 70px);display:flex;align-items:center}
+  .hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:48px;align-items:center;width:100%}
+  .hero .lead{margin:20px 0 28px}
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap}
+  .hero-note{margin-top:22px;font-size:13px;color:var(--faint);display:flex;gap:8px;align-items:center}
+
+  .swarm-card{
+    position:relative;background:var(--surface);border:1px solid var(--border-strong);
+    border-radius:var(--r-lg);overflow:hidden;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,.6);
+  }
+  .swarm-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border)}
+  .swarm-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase}
+  .pulse{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 0 rgba(74,222,128,.5);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+  .swarm-chart{position:relative;height:230px;background:radial-gradient(320px 200px at 50% 45%,rgba(14,165,233,.10),transparent 70%)}
+  #swarm{width:100%;height:100%;display:block}
+  .swarm-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
+  .swarm-stat{background:var(--surface);padding:12px 14px}
+  .swarm-stat b{display:block;font-family:var(--font-display);font-size:17px;font-variant-numeric:tabular-nums}
+  .swarm-stat span{font-size:11px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase}
+  .swarm-hero{margin-top:14px;padding:12px 16px;border-top:1px solid var(--border)}
+  .ticket{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .ticket .t-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ticket .t-progress{font-family:var(--font-display);font-variant-numeric:tabular-nums;font-size:13px;color:var(--accent)}
+  .tbar{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin-top:10px}
+  .tbar>div{height:100%;width:38%;border-radius:99px;background:var(--accent-strong);transition:width 1s linear}
+
+  /* ---------- features ---------- */
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+  .feature{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;
+    transition:border-color var(--ease) 150ms,transform .15s var(--ease);
+  }
+  .feature:hover{border-color:var(--border-strong);transform:translateY(-2px)}
+  .feature-icon{
+    width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:rgba(56,189,248,.1);color:var(--accent);margin-bottom:16px;
+  }
+  .feature-icon svg{width:20px;height:20px}
+  .feature p{color:var(--muted);font-size:14px;margin-top:8px}
+
+  /* ---------- steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+  .step{position:relative;padding:24px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--surface)}
+  .step-num{font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--faint);letter-spacing:.1em}
+  .step h3{margin:12px 0 8px}
+  .step p{color:var(--muted);font-size:14px}
+
+  /* ---------- speed band ---------- */
+  .speed-band{
+    margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;background:var(--surface);
+  }
+  .speed-side{padding:40px}
+  .speed-side h2{margin:16px 0 12px}
+  .checks{list-style:none;margin-top:24px;display:grid;gap:12px}
+  .checks li{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
+  .checks svg{width:18px;height:18px;color:var(--success);flex:none;margin-top:2px}
+  .speed-mock{background:var(--ground);border-left:1px solid var(--border);padding:40px;display:flex;flex-direction:column;justify-content:center;gap:18px}
+  .gauge-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+  .gauge-row b{font-family:var(--font-display);font-size:34px;font-variant-numeric:tabular-nums;color:var(--accent)}
+  .gauge-row span{color:var(--faint);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+  .gauge{display:grid;gap:6px}
+  .gauge .gk{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
+  .gauge .gt{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+  .gauge .gt>div{height:100%;border-radius:99px}
+  .gt-down{width:88%;background:var(--accent-strong)}
+  .gt-up{width:34%;background:rgba(74,222,128,.55)}
+
+  /* ---------- app view ---------- */
+  .app-view{display:none}
+  .app-header{margin-bottom:20px}
+  .app-header h2{font-size:24px}
+  .toolbar_row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+  .toolbar_row input[type=text]{flex:1;min-width:220px}
+  .inp{
+    background:var(--ground);border:1px solid var(--border-strong);border-radius:var(--r-md);
+    color:var(--text);padding:11px 14px;font-size:14px;font-family:var(--font-body);min-height:44px;
+  }
+  .inp:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+  .filebtn{position:relative;overflow:hidden}
+  .filebtn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+  .statusbar{
+    display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:10px 14px;margin-bottom:20px;
+  }
+  .chip{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);padding:4px 10px;border-radius:999px;background:var(--surface-2);white-space:nowrap}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+  .chip .dot.warn{background:var(--warning)}
+  .chip b{color:var(--text);font-family:var(--font-display);font-variant-numeric:tabular-nums}
+  .warnline{color:var(--warning);font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:16px}
+  .warnline svg{width:14px;height:14px;flex:none}
+
+  .tcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:12px}
+  .tcard-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+  .tcard-name{font-family:var(--font-display);font-weight:600;font-size:15px;overflow-wrap:break-word}
+  .pct{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .pct.done{color:var(--success)}
+  .tcard-meta{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:6px}
+  .tcard-meta span{white-space:nowrap}
+  .tbar-lg{height:9px;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:14px 0}
+  .tbar-lg>div{height:100%;border-radius:99px;background:var(--success);transition:width .6s linear}
+  .tcard-actions{display:flex;gap:8px;flex-wrap:wrap}
+  .panel{margin-top:14px;border-top:1px solid var(--border);padding-top:14px;display:grid;gap:8px;max-height:280px;overflow-y:auto}
+  .panel-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted);padding:6px 8px;border-radius:var(--r-sm)}
+  .panel-row:hover{background:var(--surface-2)}
+  .panel-row .mono{color:var(--text)}
+  .hint{color:var(--faint);font-size:12px}
+
+  .empty{text-align:center;padding:48px 20px;color:var(--faint)}
+  .empty svg{width:36px;height:36px;margin-bottom:12px;color:var(--faint)}
+
+  .settings-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px;margin-bottom:20px}
+  .settings-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:12px;align-items:end}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .check-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);padding:12px 0}
+  .check-row input{width:16px;height:16px;accent-color:var(--accent)}
+  .pollrow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:20px}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--border);margin-top:48px}
+  .foot{max-width:var(--maxw);margin:0 auto;padding:32px 24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--faint);font-size:13px}
+
+  /* ---------- toast ---------- */
+  #toasts{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:10px;z-index:99;width:min(480px,calc(100vw - 32px))}
+  .toast{
+    display:flex;gap:10px;align-items:flex-start;font-size:13px;
+    background:var(--surface-3);border:1px solid var(--border-strong);border-left:3px solid var(--accent);
+    border-radius:var(--r-sm);padding:12px 14px;box-shadow:0 12px 30px -12px rgba(0,0,0,.7);
+    animation:toastIn var(--ease) 240ms;
+  }
+  .toast.err{border-left-color:var(--danger)}
+  .toast.ok{border-left-color:var(--success)}
+  .toast svg{width:16px;height:16px;flex:none;margin-top:2px}
+  @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .hero-grid{grid-template-columns:1fr;gap:36px}
+    .hero{min-height:auto;padding-top:var(--sp-6)}
+    h1{font-size:38px}
+    .features-grid{grid-template-columns:repeat(2,1fr)}
+    .steps{grid-template-columns:1fr}
+    .speed-band{grid-template-columns:1fr}
+    .speed-mock{border-left:0;border-top:1px solid var(--border)}
+  }
+  @media (max-width:640px){
+    .section{padding:48px 16px}
+    .hero-grid{grid-template-columns:1fr}
+    .nav{display:none}
+    .features-grid{grid-template-columns:1fr}
+    .btn{min-height:44px;padding:12px 18px;font-size:15px}
+    input.inp{font-size:16px}
+    .toolbar_row{flex-direction:column}
+    .toolbar_row input[type=text]{width:100%}
+    .cta-row .btn{flex:1}
+  }
+  @media (hover:none){.feature:hover{transform:none}.feature{transition:none}}
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="#" onclick="goHome();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="12" r="2.4"/><circle cx="17" cy="6" r="2.4"/><circle cx="17" cy="18" r="2.4"/><path d="M9.2 11l5.6-4M9.2 13l5.6 4"/></svg>
+    BoltTorrent
+  </a>
+  <nav class="nav" aria-label="Primary">
+    <a href="#features" id="navFeatures">Features</a>
+    <a href="#how" id="navHow">How it works</a>
+    <a href="#speed" id="navSpeed">Speed</a>
+    <button class="btn btn-filled" id="navCta">Open app</button>
+  </nav>
+</header>
+
+<!-- ============ LANDING ============ -->
+<section class="hero">
+  <div class="hero-grid section" style="padding-top:0;padding-bottom:0">
+    <div>
+      <span class="eyebrow">Self-hosted · Private · Web-based</span>
+      <h1 style="margin-top:20px">Torrent downloads,<br/>at full speed.</h1>
+      <p class="lead">A clean torrent client you can run anywhere — paste a magnet, watch live progress, and grab files from any device. No installs, no ads, no clutter.</p>
+      <div class="cta-row">
+        <button class="btn btn-filled" onclick="goApp()">Launch dashboard</button>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="hero-note mono" id="heroLive">connecting to session…</p>
+    </div>
+    <div class="swarm-card" aria-hidden="true">
+      <div class="swarm-head">
+        <div class="swarm-title"><span class="pulse"></span>Live swarm</div>
+        <span class="faint mono" style="font-size:11px">tracker · DHT · PeX</span>
+      </div>
+      <div class="swarm-chart"><canvas id="swarm"></canvas></div>
+      <div class="swarm-stats">
+        <div class="swarm-stat"><b id="svDht">0</b><span>DHT nodes</span></div>
+        <div class="swarm-stat"><b id="svDown">0 B/s</b><span>download</span></div>
+        <div class="swarm-stat"><b id="svPeers">0</b><span>peers</span></div>
+      </div>
+      <div class="swarm-hero">
+        <div class="ticket">
+          <span class="t-name">ubuntu-24.04.1-desktop-amd64.iso</span>
+          <span class="t-progress mono">38% · 6.2 MB/s</span>
+        </div>
+        <div class="tbar"><div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="center">
+    <span class="eyebrow">Features</span>
+    <h2 style="margin:16px auto 0">Everything a client should do,<br/> without the bloat.</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><path d="M3 4h4M17 4h4"/></svg></div>
+      <h3>Add in seconds</h3>
+      <p>Paste a magnet link or upload a .torrent file. Metadata arrives from peers; the real name shows up automatically.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a4 4 0 0 1 0-8 6 6 0 0 1 11-2 4 4 0 0 1 1 8"/><path d="M12 12v8M8 15l4-4 4 4"/></svg></div>
+      <h3>Live progress</h3>
+      <p>Percent, speed, ETA, seed and peer counts — all streaming in real time with smart auto-refresh that never overlaps.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1-12 0z"/><path d="M5 16v4h6v-4M15 12l-3 3-3-3"/></svg></div>
+      <h3>Multiple torrents</h3>
+      <p>Pause, resume, re-announce and remove any transfer without disturbing the rest of the swarm.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 11l5 5 5-5"/><path d="M5 19h14"/></svg></div>
+      <h3>Direct file access</h3>
+      <p>Per-file progress and one-click downloads of individual files — no need to wait for the whole torrent.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></div>
+      <h3>Private by default</h3>
+      <p>Runs on your own machine or server. Your IP, your history, your files. Optional RC4 encryption for throttling ISPs.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14 0 18M12 3c-3 3.5-3 14 0 18"/></svg></div>
+      <h3>Works everywhere</h3>
+      <p>A responsive web UI for phones, tablets and desktops. Host the frontend anywhere, point it at your backend.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="center">
+    <span class="eyebrow">How it works</span>
+    <h2 style="margin-top:16px">Three steps to a finished file.</h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <span class="step-num">01 — Add</span>
+      <h3>Drop in a link</h3>
+      <p>Paste a magnet or upload a .torrent file from the dashboard. Multiple transfers queue cleanly.</p>
+    </div>
+    <div class="step">
+      <span class="step-num">02 — Download</span>
+      <h3>The engine negotiates</h3>
+      <p>libtorrent talks to trackers, DHT and PeX to find peers and fetch pieces — tuned for throughput.</p>
+    </div>
+    <div class="step">
+      <span class="step-num">03 — Access</span>
+      <h3>Grab what you need</h3>
+      <p>Download complete files, wait for a specific one, or stream before the torrent finishes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="speed">
+  <div class="center">
+    <span class="eyebrow">Speed</span>
+    <h2 style="margin-top:16px">Tuned for throughput.</h2>
+  </div>
+  <div class="speed-band">
+    <div class="speed-side">
+      <h2>What the engine does for you</h2>
+      <p class="muted" style="font-size:14px">Peer discovery and disk I/O are configured aggressively so your connection — not the client — decides the ceiling.</p>
+      <ul class="checks">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Announces to every tracker and tier — not just one per tier.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>DHT state persisted across restarts for instant peer discovery.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>UpnP / NAT-PMP auto port-forwarding, no manual router config.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Configurable upload cap to keep your ACK channel open.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Peer inspector shows seed count and choke state per peer.</li>
+      </ul>
+    </div>
+    <div class="speed-mock">
+      <div class="gauge-row"><b>8.7 MB/s</b><span>download</span></div>
+      <div class="gauge">
+        <div class="gk"><span>downlink</span><span>88%</span></div>
+        <div class="gt"><div class="gt-down"></div></div>
+      </div>
+      <div class="gauge" style="margin-top:-4px">
+        <div class="gk"><span>uplink</span><span>34%</span></div>
+        <div class="gt"><div class="gt-up"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP ============ -->
+<section class="app-view">
+  <div class="section" style="padding-top:32px">
+    <div class="app-header">
+      <h2><span class="mono" style="color:var(--accent)">/</span> Dashboard</h2>
+      <p class="muted" id="pollStatus" style="font-size:13px">connecting…</p>
+    </div>
+
+    <div class="toolbar_row">
+      <input class="inp" id="magnet" type="text" placeholder="Paste a magnet link…" autocomplete="off" spellcheck="false" />
+      <button class="btn btn-filled" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><path d="M3 4h4M17 4h4"/></svg>
+        Add
+      </button>
+      <label class="btn btn-ghost filebtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17a4 4 0 0 1 0-8 6 6 0 0 1 11-2 4 4 0 0 1 1 8"/><path d="M12 12v8M8 15l4-4 4 4"/></svg>
+        .torrent upload
+        <input type="file" id="fileInput" accept=".torrent" />
+      </label>
+      <button class="btn btn-ghost" id="refreshBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 3v5h-5"/></svg>
+        Refresh
+      </button>
+      <button class="btn btn-ghost" id="pollBtn"><span class="pc-pause">⏸</span> Pause auto-refresh</button>
+    </div>
+
+    <div class="statusbar" id="sessStatus">
+      <span class="chip"><span class="dot"></span>DHT <b id="stDht">0</b></span>
+      <span class="chip">↓ <b id="stDown">0 B/s</b></span>
+      <span class="chip">↑ <b id="stUp">0 B/s</b></span>
+      <span class="chip">peers <b id="stPeers">0</b></span>
+      <span class="chip" id="stIncoming">incoming <b>…</b></span>
+      <span class="chip"><button class="btn btn-ghost" style="min-height:auto;padding:3px 10px" onclick="toggleSettings()">Settings</button></span>
+    </div>
+
+    <div class="settings-card" id="settingsCard" style="display:none">
+      <div class="settings-grid">
+        <div class="field">
+          <label for="setDown">Download cap (kB/s — 0 = unlimited)</label>
+          <input class="inp" id="setDown" type="number" min="0" placeholder="0" style="width:100%" />
+        </div>
+        <div class="field">
+          <label for="setUp">Upload cap (kB/s — 0 = unlimited)</label>
+          <input class="inp" id="setUp" type="number" min="0" placeholder="0" style="width:100%" />
+        </div>
+        <div class="field">
+          <label for="setPort">Listen port</label>
+          <input class="inp" id="setPort" type="number" min="1" max="65535" placeholder="6881" style="width:100%" />
+        </div>
+        <div>
+          <button class="btn btn-filled" style="width:100%;min-height:44px" id="saveSettings">Save settings</button>
+        </div>
+      </div>
+      <label class="check-row"><input type="checkbox" id="setEnc" /> Force encryption (strict RC4 — refuses plaintext peers; only useful if your ISP throttles torrents)</label>
+      <p class="hint" id="setMsg"></p>
+    </div>
+
+    <div class="warnline" id="firewallWarn" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>
+      No incoming connections detected — open the listen port on your router (UPnP is enabled, but some routers ignore it) for more peers and higher speed.
+    </div>
+
+    <div id="list"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <span>BoltTorrent — self-hosted torrent client</span>
+    <span class="mono">libtorrent + FastAPI · free forever</span>
+  </div>
+</footer>
+
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+// Configurable backend URL when frontend is hosted separately:
+// window.API_BASE = 'https://your-backend.example.com';
+const BASE = (window.API_BASE || location.origin).replace(/\/+$/, '');
+const _f = (u, o) => fetch(BASE + u, o);
+const api = (p, o) => _f(p, o).then(async r => {
+  if(!r.ok){
+    let msg = r.statusText;
+    try{ const j = await r.json(); if(j.detail) msg = typeof j.detail === 'string' ? j.detail : JSON.stringify(j.detail); }catch(e){}
+    throw new Error(msg);
+  }
+  return r.json();
+});
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtBytes = n => n>1e9? (n/1e9).toFixed(2)+' GB' : n>1e6? (n/1e6).toFixed(1)+' MB' : n>1e3? (n/1e3).toFixed(0)+' KB' : n+' B';
+const fmtSpeed = n => fmtBytes(n)+'/s';
+const fmtEta = s => s<0? '—' : s>3600? Math.floor(s/3600)+'h '+Math.floor(s%3600/60)+'m' : s>60? Math.floor(s/60)+'m '+s%60+'s' : s+'s';
+
+let timer=null, inFlight=false, autoRefresh=false;
+const openPanels=new Set(), openPeerPanels=new Set();
+const pausedState={};
+
+function toast(msg, kind='err'){
+  const t=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className='toast '+(kind==='ok'?'ok':kind==='err'?'err':'');
+  const ic=kind==='ok'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>';
+  el.innerHTML=ic+'<span>'+esc(msg)+'</span>';
+  t.appendChild(el);
+  setTimeout(()=>{ el.style.opacity=0; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),320); }, 4200);
+}
+
+/* ---------- view switching ---------- */
+let view='landing';
+function setView(v){
+  view=v;
+  const landing=document.querySelector('.hero');
+  const app=document.querySelector('.app-view');
+  if(v==='app'){ landing.style.display='none'; app.style.display='block'; app.scrollIntoView({behavior:'auto'}); startPolling(); }
+  else{ app.style.display='none'; landing.style.display='block'; window.scrollTo({top:0,behavior:'smooth'}); }
+}
+function goApp(){ setView('app'); navCtaLabel(); }
+function goHome(){ setView('landing'); navCtaLabel(); }
+function navCtaLabel(){
+  document.getElementById('navCta').textContent = view==='app' ? 'Back to landing' : 'Open app';
+}
+document.getElementById('navCta').onclick=()=>{ if(view==='app')goHome(); else goApp(); };
+document.getElementById('navFeatures').onclick=()=>{ if(view!=='landing')goHome(); };
+
+/* ---------- swarm canvas (hero signature) ---------- */
+(function(){
+  const cv=document.getElementById('swarm'); if(!cv) return;
+  const ctx=cv.getContext('2d');
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,H,nodes=[],raf=null;
+  function size(){
+    const r=cv.parentElement.getBoundingClientRect();
+    W=cv.width=r.width; H=cv.height=r.height;
+    init();
+  }
+  function init(){
+    const N=Math.min(46,Math.floor(W*H/5200));
+    nodes=[];
+    for(let i=0;i<N;i++){
+      nodes.push({
+        x:Math.random()*W, y:Math.random()*H,
+        vx:(Math.random()-.5)*.45, vy:(Math.random()-.5)*.45,
+        r:Math.random()*1.6+1.2,
+        c:Math.random()<.16
+      });
+    }
+  }
+  function step(){
+    ctx.clearRect(0,0,W,H);
+    for(const n of nodes){
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<0||n.x>W)n.vx*=-1; if(n.y<0||n.y>H)n.vy*=-1;
+    }
+    for(let i=0;i<nodes.length;i++){
+      for(let j=i+1;j<nodes.length;j++){
+        const a=nodes[i],b=nodes[j],dx=a.x-b.x,dy=a.y-b.y,d2=dx*dx+dy*dy;
+        if(d2<11000){
+          const d=Math.sqrt(d2);
+          ctx.strokeStyle='rgba(56,189,248,'+(0.10*(1-d/105)).toFixed(3)+')';
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+      const n=nodes[i];
+      ctx.fillStyle=n.c?'rgba(56,189,248,.85)':'rgba(148,163,184,.35)';
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,6.283);ctx.fill();
+    }
+    if(!reduce) raf=requestAnimationFrame(step);
+  }
+  size();
+  window.addEventListener('resize',()=>{ if(!document.hidden) size(); });
+  document.addEventListener('visibilitychange',()=>{ cancelAnimationFrame(raf); if(!document.hidden&&!reduce) step(); });
+  if(reduce) step();
+  // hero live data (real session)
+  fetch(BASE + '/api/session').then(r=>r.json()).then(s=>{
+    document.getElementById('svDht').textContent=s.dht_nodes;
+    document.getElementById('svDown').textContent=fmtSpeed(s.download_rate);
+    document.getElementById('svPeers').textContent=s.peers;
+  }).catch(()=>{ document.getElementById('heroLive').textContent='backend not reachable — start app.py'; });
+})();
+
+/* ---------- app functionality ---------- */
+const $=id=>document.getElementById(id);
+const panelIcon={
+  pause:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5l11 7-11 7z"/></svg>',
+  reann:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 3v5h-5"/></svg>',
+  files:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>',
+  peers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M16 11a3 3 0 1 0 0-6M21 19a5 5 0 0 0-3.5-4.8"/></svg>',
+  remove:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>',
+  delete:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/><path d="M10 11v6M14 11v6"/></svg>'
+};
+
+function schedule(ms){ clearTimeout(timer); if(!autoRefresh) return; $('pollStatus').textContent='auto-refresh every '+Math.round(ms/1000)+'s'; timer=setTimeout(refresh,ms); }
+
+async function refresh(){
+  clearTimeout(timer);
+  if(inFlight){ schedule(3000); return; }
+  if(document.hidden){ schedule(10000); return; }
+  inFlight=true;
+  try{
+    const [list,sess]=await Promise.all([api('/api/torrents'),api('/api/session')]);
+    render(list); renderSession(sess);
+    const active=list.some(t=>!t.is_seeding && !t.paused);
+    schedule(list.length===0?10000:active?3000:15000);
+  }catch(e){ schedule(5000); } finally { inFlight=false; }
+}
+
+function renderSession(s){
+  $('stDht').textContent=s.dht_nodes; $('stDown').textContent=fmtSpeed(s.download_rate);
+  $('stUp').textContent=fmtSpeed(s.upload_rate); $('stPeers').textContent=s.peers;
+  const inc=s.has_incoming;
+  $('stIncoming').innerHTML='incoming <b>'+(inc?'✓':'✗')+'</b>';
+  $('firewallWarn').style.display=inc?'none':'flex';
+}
+
+function render(list){
+  const box=$('list');
+  if(!list.length){
+    box.innerHTML='<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><path d="M3 4h4M17 4h4"/></svg><p>No torrents yet.</p><p class="hint" style="margin-top:6px">Paste a magnet above or upload a .torrent to get started.</p></div>';
+    return;
+  }
+  box.innerHTML=list.map(t=>{
+    pausedState[t.id]=t.paused;
+    const done=t.progress>=99.9;
+    return `
+    <div class="tcard" data-id="${esc(t.id)}">
+      <div class="tcard-head">
+        <div style="min-width:0">
+          <div class="tcard-name">${esc(t.name)}</div>
+          <div class="tcard-meta">
+            <span class="mono">${fmtBytes(t.downloaded)} / ${fmtBytes(t.total_size)}</span>
+            <span class="mono">↓ ${fmtSpeed(t.download_rate)}</span>
+            <span class="mono">↑ ${fmtSpeed(t.upload_rate)}</span>
+            <span>ETA ${fmtEta(t.eta)}</span>
+            <span>${esc(t.state)}${t.is_seeding?' · done':''}</span>
+          </div>
+        </div>
+        <div class="pct ${done?'done':''}">${Number(t.progress).toFixed(1)}%</div>
+      </div>
+      <div class="tbar-lg"><div style="width:${Number(t.progress)||0}%"></div></div>
+      <div class="tcard-actions">
+        <button class="btn btn-ghost" data-act="pause">${pausedState[t.id]?panelIcon.play+' Resume':panelIcon.pause+' Pause'}</button>
+        <button class="btn btn-ghost" data-act="reannounce">${panelIcon.reann+''}Re-announce</button>
+        <button class="btn btn-ghost" data-act="files">${panelIcon.files+''}Files</button>
+        <button class="btn btn-ghost" data-act="peers">${panelIcon.peers+''}Peers</button>
+        <button class="btn btn-danger" data-act="remove">${panelIcon.remove+''}Remove</button>
+        <button class="btn btn-danger" data-act="delete">${panelIcon.delete+''}Delete files</button>
+      </div>
+      <div class="panel" id="files-${esc(t.id)}" style="display:none"></div>
+      <div class="panel" id="peers-${esc(t.id)}" style="display:none"></div>
+    </div>`;
+  }).join('');
+  openPanels.forEach(id=>{ if(pausedState.hasOwnProperty(id)) fillFiles(id); });
+  openPeerPanels.forEach(id=>{ if(pausedState.hasOwnProperty(id)) fillPeers(id); });
+}
+
+async function fillFiles(id, refreshOnly){
+  const el=document.getElementById('files-'+id); if(!el) return;
+  try{
+    const d=await api(`/api/torrents/${id}/files`);
+    if(!d.files.length){ el.innerHTML='<div class="hint mono">Waiting for metadata from peers…</div>'; return; }
+    el.innerHTML=d.files.map(f=>(`
+      <div class="panel-row">
+        <span style="overflow-wrap:anywhere">${esc(f.path)} <span class="faint mono">· ${f.progress}%</span></span>
+        <a class="mono" href="${BASE}/api/download/${encodeURIComponent(id)}/${f.index}">download</a>
+      </div>`)).join('');
+  }catch(e){ if(!refreshOnly) el.innerHTML='<div class="hint">Could not load files.</div>'; }
+}
+
+async function fillPeers(id){
+  const el=document.getElementById('peers-'+id); if(!el) return;
+  try{
+    const d=await api(`/api/torrents/${id}/peers`);
+    const bw=d.peer_bandwidth||{};
+    const agg=bw.aggregate||0, tRate=bw.torrent_rate||0;
+    const tip=[
+      `<div class="hint mono" style="margin-bottom:6px">${d.total} peers · ${d.seeds} seeds · ${d.choking_us} choking you</div>`,
+      `<div class="hint mono" style="margin-bottom:6px">peer bandwidth: aggregate <b>${fmtSpeed(agg)}</b> · torrent <b>${fmtSpeed(tRate)}</b> · absorbed <b>${bw.absorbed_pct??0}%</b> · fastest <b>${fmtSpeed(bw.fastest||0)}</b></div>`,
+      `<div class="hint mono" style="margin-bottom:10px">peers &gt;100 KB/s: <b>${bw.over_100kb??0}</b> · &gt;1 MB/s: <b>${bw.over_1mb??0}</b> · actively downloading: <b>${bw.downloading??0}</b></div>`
+    ].join('');
+    const rows=d.peers.slice(0,15).map(p=>`
+      <div class="panel-row">
+        <span class="mono">${esc(p.ip)}</span>
+        <span class="hint">${esc(p.client||'unknown')}</span>
+        <span class="mono">↓ ${fmtSpeed(p.down)} · ${p.progress}%${p.seed?' · seed':''}${p.they_choke_us?' · choking you':''}</span>
+      </div>`).join('');
+    el.innerHTML=tip+(rows||'<div class="hint">No peer data yet.</div>');
+  }catch(e){ el.innerHTML='<div class="hint">Could not load peers.</div>'; }
+}
+
+/* event delegation */
+$('list').addEventListener('click', async e=>{
+  const btn=e.target.closest('button[data-act]'); if(!btn) return;
+  const card=btn.closest('.tcard'); const id=card&&card.dataset.id; if(!id) return;
+  const act=btn.dataset.act;
+  if(act==='pause'){ await _f(`/api/torrents/${id}/${pausedState[id]?'resume':'pause'}`,{method:'POST'}); }
+  else if(act==='reannounce'){ await _f(`/api/torrents/${id}/reannounce`,{method:'POST'}); toast('Re-announced to trackers and DHT','ok'); }
+  else if(act==='remove'){ await _f(`/api/torrents/${id}?delete_files=false`,{method:'DELETE'}); openPanels.delete(id); openPeerPanels.delete(id); }
+  else if(act==='delete'){
+    if(!confirm('Delete the downloaded files for this torrent too?')) return;
+    await _f(`/api/torrents/${id}?delete_files=true`,{method:'DELETE'}); openPanels.delete(id); openPeerPanels.delete(id);
+  }
+  else if(act==='files'){
+    const el=document.getElementById('files-'+id);
+    if(openPanels.has(id)){ openPanels.delete(id); el.style.display='none'; }
+    else{ openPanels.add(id); el.style.display='grid'; fillFiles(id); }
+    return;
+  }
+  else if(act==='peers'){
+    const el=document.getElementById('peers-'+id);
+    if(openPeerPanels.has(id)){ openPeerPanels.delete(id); el.style.display='none'; }
+    else{ openPeerPanels.add(id); el.style.display='grid'; fillPeers(id); }
+    return;
+  }
+  refresh();
+});
+
+$('addBtn').onclick=async()=>{
+  const magnet=$('magnet').value.trim();
+  if(!magnet) return toast('Paste a magnet link first');
+  try{
+    await api('/api/torrents',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({magnet})});
+    $('magnet').value=''; toast('Torrent added','ok'); refresh();
+  }catch(e){ toast('Could not add torrent: '+e.message); }
+};
+$('magnet').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('addBtn').click(); } });
+$('fileInput').onchange=async()=>{
+  const f=$('fileInput').files[0]; if(!f) return;
+  const fd=new FormData(); fd.append('file',f);
+  try{
+    const r=await _f('/api/torrents/upload',{method:'POST',body:fd});
+    if(!r.ok){ let m=r.statusText; try{ m=(await r.json()).detail||m; }catch(_){} throw new Error(m); }
+    toast('Torrent uploaded','ok'); refresh();
+  }catch(e){ toast('Upload failed: '+e.message); }
+  $('fileInput').value='';
+};
+$('refreshBtn').onclick=()=>refresh();
+$('pollBtn').onclick=e=>{
+  autoRefresh=!autoRefresh;
+  const lbl=$('pollBtn');
+  lbl.innerHTML=(autoRefresh?'<span class="pc-pause">⏸</span> Pause auto-refresh':'<span class="pc-plug">▶</span> Start auto-refresh');
+  if(autoRefresh) refresh(); else { clearTimeout(timer); $('pollStatus').textContent='auto-refresh paused'; }
+};
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&autoRefresh) refresh(); });
+
+function toggleSettings(){ const c=$('settingsCard'); c.style.display=c.style.display==='none'?'block':'none'; }
+
+async function loadSettings(){
+  try{
+    const s=await api('/api/settings');
+    $('setDown').value=s.download_limit_kb||0; $('setUp').value=s.upload_limit_kb||0;
+    $('setPort').value=s.listen_port||6881; $('setEnc').checked=!!s.force_encryption;
+  }catch(e){}
+}
+$('saveSettings').onclick=async()=>{
+  const body={
+    download_limit_kb:Number($('setDown').value)||0,
+    upload_limit_kb:Number($('setUp').value)||0,
+    listen_port:Number($('setPort').value)||6881,
+    force_encryption:$('setEnc').checked
+  };
+  try{
+    await api('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    toast('Settings saved','ok');
+  }catch(e){ toast('Save failed: '+e.message); }
+};
+loadSettings();
+navCtaLabel();
+</script>
+</body>
+</html>

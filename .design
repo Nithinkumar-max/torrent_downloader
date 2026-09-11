@@ -1,0 +1,169 @@
+schema: design.v1
+name: bolttorrent
+version: 1.0.0
+status: bootstrap
+description: BoltTorrent — self-hosted web torrent client with a dark, precise SaaS landing + dashboard. Cyan brand, single dark theme, Space Grotesk + Inter.
+
+agent:
+  skill: design
+  instructions: |
+    READ
+    - Load this file before any UI generation or restyle for this project.
+    - Order: overview/intent -> constraints -> tokens -> voice -> components -> locked.
+
+    FOLLOW (generate or edit UI)
+    - Single dark theme (themes.single) — do not invent a light mode.
+    - Bind tokens; never hardcode hex/spacing/radius where a token exists.
+    - Concentrate boldness in the hero swarm visual (intent.signature); keep the rest quiet.
+    - Icons are inline SVG, stroke ~1.75, harmonious with 14-16px UI text — never emoji as icons/bullets.
+    - Buttons: one filled primary per view; ghost + danger for the rest.
+    - All interactive targets >= 44px on touch, >= 40px desktop.
+    - No gradients except the single soft radial glow behind the hero visual.
+    - Responsive: breakpoints at 900px and 640px; inputs >= 16px font on small screens.
+    - Focus-visible ring in cyan, never bare outline:none.
+
+    UPDATE
+    - Edit in place; bump version.
+
+    VERIFY
+    - Tokens <-> CSS custom properties in static/index.html must match.
+
+    PRECEDENCE
+    1) User prompt 2) This file 3) design skill 4) Model defaults
+
+    NEVER
+    - Gradients beyond the hero glow
+    - Glassmorphism
+    - Emoji as icons
+    - Off-system fonts
+    - Emulate the "default AI" catalogue (purple-blue hero, acid accents, uniform rounded cards, everything centered)
+
+overview: |
+  A web torrent client as a polished SaaS surface. The mark framed a working product,
+  not a movie poster: real live data (progress, speeds, peers) rendered with craft.
+
+intent:
+  reference: "Linear meets a networking console — precise dark surfaces, one cyan accent, live-data sincerity"
+  direction: editorial-precise
+  signature: "A live animated swarm visual in the hero: nodes drifting and linking, with real session numbers"
+  treatment: editorial
+  density: comfortable
+  trust: high
+
+voice:
+  register: "Confident, precise, no hype. Short imperatives; sentence case."
+  errors: "Say what happened and the next step."
+
+themes:
+  single: dark
+
+tokens:
+  color:
+    ground: "#070B12"
+    surface: "#0D131C"
+    surface-2: "#121A26"
+    border: "rgba(148,163,184,0.10)"
+    border-strong: "rgba(148,163,184,0.16)"
+    text: "#E8EEF7"
+    muted: "#9AA7B8"
+    accent: "#38BDF8"
+    accent-strong: "#0EA5E9"
+    on-accent: "#04121B"
+    success: "#4ADE80"
+    danger: "#F87171"
+    warning: "#FBBF24"
+  spacing:
+    unit: 4
+    sm: 8
+    md: 16
+    lg: 24
+    xl: 40
+    xxl: 64
+  radius:
+    sm: 8
+    md: 12
+    lg: 18
+  typography:
+    body:
+      font: Inter
+      size: 16
+      weight: 400
+      lh: 1.6
+    body-sm:
+      font: Inter
+      size: 14
+      weight: 400
+    mono:
+      font: "Space Grotesk"
+      size: 14
+      weight: 500
+      feature: tabular
+    display:
+      font: "Space Grotesk"
+      size: 48
+      weight: 700
+      lh: 1.05
+      tracking: -0.02em
+    heading:
+      font: "Space Grotesk"
+      size: 24
+      weight: 700
+      lh: 1.15
+  motion:
+    hover: "150ms cubic-bezier(0.32, 0.72, 0, 1)"
+    panel: "240ms cubic-bezier(0.32, 0.72, 0, 1)"
+
+components:
+  button:
+    variants: [filled, ghost, danger]
+    size:
+      touch: "padding 12px 18px; min-height 44px"
+      desktop: "padding 10px 16px; min-height 40px"
+    tokens:
+      filled:
+        bg: "{tokens.color.accent-strong}"
+        fg: "{tokens.color.on-accent}"
+        hover-bg: "#0C94D3"
+      ghost:
+        bg: "{tokens.color.surface-2}"
+        fg: "{tokens.color.text}"
+        border: "{tokens.color.border}"
+      danger:
+        bg: "transparent"
+        fg: "{tokens.color.danger}"
+        border: "rgba(248,113,113,0.25)"
+  card:
+    bg: "{tokens.color.surface}"
+    border: "{tokens.color.border}"
+    radius: "{tokens.color.radius.lg if false else tokens.radius.md}"
+  input:
+    bg: "{tokens.color.ground}"
+    border: "{tokens.color.border-strong}"
+    focus-ring: "{tokens.color.accent}"
+    radius: "{tokens.radius.md}"
+  progress:
+    track: "{tokens.color.surface-2}"
+    fill: "{tokens.color.success}"
+
+rationale:
+  overview: |
+    Dark and precise to make live numeric data feel trustworthy — the product's own output
+    is the decoration. Cyan carries action and data highlights; green is reserved for
+    progress/health so it never collides with the brand hue. The single hero glow + swarm
+    visual is where boldness lives; everything else stays flat, quiet, and legible.
+
+policy:
+  if_missing: invent_with_note
+  hierarchy: [typography, spacing, contrast, color]
+
+constraints:
+  always:
+    - bind tokens to CSS custom properties
+    - one filled primary per view
+    - focus-visible cyan ring
+    - responsive at 900px and 640px
+  never:
+    - gradients beyond the single hero glow
+    - glassmorphism
+    - emoji as icons or bullets
+    - off-system fonts

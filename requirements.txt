@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+libtorrent
+python-multipart
